@@ -1,26 +1,38 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+	<h2>PZ Server Mod Assistant</h2>
+	<p>This will help you organize the mods that you want enabled in your PZ server</p>
+	<!-- <HelloWorld msg="Welcome to Your Vue.js App" /> -->
+	{{demo}}
+	<label for="">Mod Name</label>
+	<input
+		class="bg-slate-200"
+		v-model="inputData.inputName"
+		type="text"
+	>
+	<label for="">Mod Id</label>
+	<button class="bg-slate-200">Add</button>
+	name={{inputData.inputName}}
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import { ref } from "vue";
 
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+	setup() {
+		const inputData = ref({ inputName: "demoName", inputId: "123" });
+		const demo = ref(0);
+		// expose to template and other options API hooks
+		return {
+			demo,
+			inputData,
+		};
+	},
+
+	mounted() {},
+};
 </script>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
 }
 </style>
