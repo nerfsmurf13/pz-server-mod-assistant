@@ -1,7 +1,6 @@
 <template>
 	<h2 class="text-2xl p-4">PZ Server Mod Assistant</h2>
 	<p class="p-4">This will help you when configuring your Project Zomboid's server.ini file for mods</p>
-	<!-- <HelloWorld msg="Welcome to Your Vue.js App" /> -->
 	<form
 		action=""
 		@submit.prevent
@@ -63,6 +62,11 @@
 		</div>
 	</form>
 	<div class="mod-list-container max-w-[1024px] grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 py-4 px-2">
+		<!-- <ModCard
+			v-for="(mod,index) in modList"
+			:mod="mod"
+			:key="index"
+		/> -->
 		<div
 			v-for="(mod,index) in modList"
 			:key="index"
@@ -84,12 +88,6 @@
 					v-for="(subMod,index) in mod.workshopName"
 					:key="index"
 				>
-					<!-- <input
-						@click="updateData"
-						type="checkbox"
-						name=""
-						v-model="subMod.active"
-					> -->
 					<span>{{subMod.name}}</span>
 				</div>
 			</div>
@@ -129,8 +127,10 @@
 
 <script>
 import { ref, computed, watch } from "vue";
+// import ModCard from "./components/ModCard.vue";
 
 export default {
+	// components: { ModCard },
 	setup() {
 		const inputData = ref({
 			inputName: "",
