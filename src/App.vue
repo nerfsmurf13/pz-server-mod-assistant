@@ -1,16 +1,12 @@
 <template>
 	<h2 class="text-2xl p-4">PZ Server Mod Assistant</h2>
 	<p class="p-4">This will help you when configuring your Project Zomboid's server.ini file for mods</p>
-	<form
-		action=""
-		@submit.prevent
-		class=""
-	>
-		<div class="new-mod-form p-2 px-4 shadow border flex flex-col m-1">
+	<form @submit.prevent="submitMod">
+		<fieldset class="new-mod-form p-2 px-4 shadow border flex flex-col m-1 rounded">
 			<div class="flex flex-col mb-2">
 				<label for="">Mod Name:</label>
 				<input
-					class="bg-slate-200 pl-2"
+					class="bg-slate-200 pl-2 rounded"
 					v-model.trim="inputData.inputName"
 					type="text"
 				>
@@ -18,7 +14,7 @@
 			<div class="flex flex-col mb-2">
 				<label for="">Workshop ID:</label>
 				<input
-					class="bg-slate-200 pl-2"
+					class="bg-slate-200 pl-2 rounded"
 					v-model.number="inputData.inputId"
 					type="number"
 				>
@@ -28,7 +24,7 @@
 				<div class="flex flex-col">
 					<input
 						v-for="(wsName,index) in inputData.workshopName"
-						class="bg-slate-200 mb-2 pl-2"
+						class="bg-slate-200 mb-2 pl-2 rounded"
 						:key='index'
 						v-model.trim="inputData.workshopName[index].name"
 						type="text"
@@ -38,28 +34,28 @@
 					<div class="flex flex-col">
 						<button
 							:disabled="inputData.workshopName.length==1"
-							:class="{'bg-red-100':inputData.workshopName.length==1}"
+							:class="{'bg-red-100 text-gray-500':inputData.workshopName.length==1}"
 							@click="removeModId"
-							class="bg-red-500 text-white w-full text-center mb-2"
+							class="bg-red-500 text-white w-full text-center mb-2 rounded"
 						>Remove Mod ID</button>
 					</div>
 					<div>
 						<button
+							class="bg-blue-500 text-white w-full text-center mb-2 rounded"
 							@click="addModId"
-							class="bg-blue-500 text-white w-full text-center mb-2"
 						>Add Mod ID</button>
 					</div>
 				</div>
 
 			</div>
 			<div class="w-full flex">
-				<submit
-					class="flex bg-green-500 text-white w-full text-center mb-2 h-10 justify-center items-center"
-					@click="addMod"
-				>Add</submit>
+				<button
+					class="flex bg-green-500 text-white w-full text-center mb-2 h-10 justify-center items-center rounded"
+					type="submit"
+				>Add</button>
 			</div>
 
-		</div>
+		</fieldset>
 	</form>
 	<div class="mod-list-container max-w-[1024px] grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 py-4 px-2">
 		<!-- <ModCard
@@ -102,8 +98,12 @@
 		</div>
 	</div>
 	<div class="mod-raw-text w-full">
+		<button
+			@click="copyModsString(modsString)"
+			class="outline outline-1 rounded p-2 my-2"
+		>Copy Mods</button>
 		<textarea
-			v-model="rawMods"
+			v-model="modsString"
 			type=""
 			rows="6"
 			name=""
@@ -112,8 +112,12 @@
 		></textarea>
 	</div>
 	<div class="id-raw-text w-full">
+		<button
+			@click="copyIdsString(idsString)"
+			class="outline outline-1 rounded p-2 my-2"
+		>Copy Workshop Items</button>
 		<textarea
-			v-model="rawIds"
+			v-model="idsString"
 			type=""
 			rows="6"
 			name=""
@@ -144,8 +148,24 @@ export default {
 		function saveMods() {
 			const parsed = JSON.stringify(modList.value);
 			localStorage.setItem("modList", parsed);
-			console.log("Saved");
-			console.log(parsed);
+			console.log("Data Saved");
+			// console.log(parsed);
+		}
+
+		//==========Mod Form Validation
+		function submitMod() {
+			console.log(inputData.value.inputName);
+			console.log(inputData.value.inputId);
+			console.log(inputData.value.workshopName[0].name);
+			if (
+				inputData.value.inputName &&
+				inputData.value.inputId &&
+				inputData.value.workshopName[0].name
+			) {
+				addMod();
+			} else {
+				console.log("Missing Data");
+			}
 		}
 
 		function addMod() {
@@ -155,7 +175,7 @@ export default {
 				workshopName: inputData.value.workshopName,
 				active: true,
 			});
-			console.log(modList.value);
+			// console.log(modList.value);
 			inputData.value.inputName = "";
 			inputData.value.inputId = "";
 			inputData.value.workshopName = [{ name: "", active: true }];
@@ -166,9 +186,7 @@ export default {
 		function removeMod(x) {
 			console.log(x);
 			for (const key in modList.value) {
-				console.log(`${x} vs ${modList.value[key].id}`);
 				if (x === modList.value[key].id) {
-					console.log("match");
 					modList.value.splice(key, 1);
 				}
 			}
@@ -180,52 +198,70 @@ export default {
 			let idString = "";
 			for (const item of modList.value) {
 				var activeCount = 0;
-				// console.log(item.id);
 				for (const subitem of item.workshopName) {
 					if (subitem.active) {
 						activeCount = activeCount + 1;
 						modString = modString + subitem.name + ",";
 					}
-					// console.log(subitem.name);
 				}
 				if (activeCount) {
 					idString = idString + item.id + ";";
-					// console.log(`active mods, add id number - ${item.id}`);
-				} else {
-					// console.log(`no active mods, dont show number - ${item.id}`);
 				}
 			}
-
 			modString = "Mods=" + modString;
 			rawMods.value = modString;
-			console.log(modString);
 			idString = "WorkshopItems=" + idString;
 			rawIds.value = idString;
-			console.log(idString);
 		}
 
+		//==========Generates the string of "Mods=" on the DOM
 		const modsString = computed(() => {
-			// let list = "";
-			// for (const mod of modsStringArr.value) {
-			// 	// console.log(mod.workshopName);
-			// 	for (const subMod of mod) {
-			// 		console.log(subMod.name);
-			// 	}
-			// 	// list = list + mod.workshopName + ",";
-			// }
-			// return "Mods=" + list;
-			return null;
+			let list = "";
+			if (modsStringArr.value.length > 0) {
+				for (const mod of modsStringArr.value) {
+					for (const subMod of mod.workshopName) {
+						if (subMod.active) {
+							list = list + subMod.name + ",";
+						}
+					}
+				}
+			}
+			return "Mods=" + list;
 		});
 
+		const copyModsString = async (x) => {
+			try {
+				await navigator.clipboard.writeText(x);
+				console.log("Mods Copied!");
+			} catch ($e) {
+				console.log($e);
+			}
+		};
+
 		const idsString = computed(() => {
-			// let list = "";
-			// for (const mod of modsStringArr.value) {
-			// 	console.log(mod.id);
-			// 	list = list + mod.id + ";";
-			// }
-			// return "WorkshopItems=" + list;
-			return null;
+			let list = "";
+			for (const mod of modsStringArr.value) {
+				let pass = false;
+				for (const subMod of mod.workshopName) {
+					if (subMod.active) {
+						pass = true;
+					}
+				}
+				if (pass) {
+					list = list + mod.id + ";";
+				}
+			}
+			return "WorkshopItems=" + list;
 		});
+
+		const copyIdsString = async (x) => {
+			try {
+				await navigator.clipboard.writeText(x);
+				console.log("WorkshopItems Copied!");
+			} catch ($e) {
+				console.log($e);
+			}
+		};
 
 		const modsStringArr = computed(() => {
 			return modList.value.filter((result) => {
@@ -236,6 +272,7 @@ export default {
 		function addModId() {
 			inputData.value.workshopName.push({ name: "", active: true });
 		}
+
 		function removeModId() {
 			inputData.value.workshopName.pop();
 		}
@@ -254,17 +291,15 @@ export default {
 		}
 
 		watch(
-			() => modsStringArr.value,
+			() => [modsString.value],
 			() => {
-				rollCall();
-				saveMods();
+				updateData();
 			}
+			// const idsStringArr = computed(() => {
+			// 	return modList.value.filter((result) => {
+			// 		return result.active == true;
+			// 	});
 		);
-		// const idsStringArr = computed(() => {
-		// 	return modList.value.filter((result) => {
-		// 		return result.active == true;
-		// 	});
-		// });
 
 		return {
 			modList,
@@ -281,11 +316,16 @@ export default {
 			removeModId,
 			rollCall,
 			updateData,
+			modsStringArr,
+			copyModsString,
+			copyIdsString,
+			submitMod,
 		};
 	},
 
 	mounted() {
-		console.log(localStorage);
+		console.log("localStorage Loaded");
+		// console.log(localStorage);
 		if (localStorage.getItem("modList")) {
 			try {
 				this.modList = JSON.parse(localStorage.getItem("modList"));
